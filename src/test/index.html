@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>signal-task test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; }
+    button { margin: 4px; padding: 8px 12px; }
+    pre { background: #111; color: #0f0; padding: 12px; height: 300px; overflow: auto; }
+  </style>
+</head>
+<body>
+
+  <h1>signal-task playground</h1>
+
+  <button id="basic">basic fetch</button>
+  <button id="retry">retry</button>
+  <button id="parallel">parallel</button>
+  <button id="map">map + concurrency</button>
+  <button id="race">race</button>
+  <button id="cancel">cancel</button>
+
+  <pre id="log"></pre>
+
+  <script type="module">
+    import { delay, task } from './signal-task.js';
+
+    const logEl = document.getElementById('log');
+
+    const log = (...args) => {
+      console.log(...args);
+      logEl.textContent += args.map(a =>
+        typeof a === 'string' ? a : JSON.stringify(a, null, 2)
+      ).join(' ') + '\n';
+    };
+
+    const clear = () => (logEl.textContent = '');
+
+    // ---------------------
+    // 1. basic
+    // ---------------------
+    document.getElementById('basic').onclick = async () => {
+      clear();
+
+      try {
+        const result = await task((signal) =>
+          fetch('https://jsonplaceholder.typicode.com/users/1', { signal })
+        )
+          .timeout(3000)
+          .map((r) => r.json())
+          .run();
+
+        log('basic result:', result);
+      } catch (e) {
+        log('error:', e);
+      }
+    };
+
+    // ---------------------
+    // 2. retry
+    // ---------------------
+    document.getElementById('retry').onclick = async () => {
+      clear();
+
+      let count = 0;
+
+      try {
+        const result = await task(async (signal) => {
+          count++;
+          log('try:', count);
+
+          if (count < 3) {
+            throw new Error('fail');
+          }
+
+          return 'success';
+        })
+          .retry(5)
+          .run();
+
+        log('retry result:', result);
+      } catch (e) {
+        log('error:', e);
+      }
+    };
+
+    // ---------------------
+    // 3. parallel
+    // ---------------------
+    document.getElementById('parallel').onclick = async () => {
+      clear();
+
+      try {
+        const result = await task
+          .all([
+            task((s) => fetch('https://jsonplaceholder.typicode.com/posts/1', { signal: s }).then(r => r.json())),
+            task((s) => fetch('https://jsonplaceholder.typicode.com/posts/2', { signal: s }).then(r => r.json())),
+          ])
+          .run();
+
+        log('parallel result:', result);
+      } catch (e) {
+        log('error:', e);
+      }
+    };
+
+    // ---------------------
+    // 4. map + concurrency
+    // ---------------------
+    document.getElementById('map').onclick = async () => {
+      clear();
+
+      try {
+        const result = await task
+          .from([1, 2, 3, 4, 5])
+          .map((id, signal) =>
+            fetch(`https://jsonplaceholder.typicode.com/users/${id}`, { signal })
+              .then((r) => r.json())
+          )
+          .concurrency(2)
+          .run();
+
+        log('map result:', result);
+      } catch (e) {
+        log('error:', e);
+      }
+    };
+
+    // ---------------------
+    // 5. race
+    // ---------------------
+    document.getElementById('race').onclick = async () => {
+      clear();
+
+      const slow = task(async (signal) => {
+        await new Promise((r) => setTimeout(r, 2000));
+        return 'slow';
+      });
+
+      const fast = task(async (signal) => {
+        await new Promise((r) => setTimeout(r, 500));
+        return 'fast';
+      });
+
+      const result = await task.race([slow, fast]).run();
+
+      log('race result:', result);
+    };
+
+    // ---------------------
+    // 6. cancel
+    // ---------------------
+    document.getElementById('cancel').onclick = async () => {
+      clear();
+
+      const controller = new AbortController();
+
+      setTimeout(() => {
+        log('abort!');
+        controller.abort();
+      }, 1000);
+
+      try {
+        const result = await task(async (signal) => {
+          await delay(3000, signal);
+          return 'done';
+        }).run(controller.signal);
+
+        log('result:', result);
+      } catch (e) {
+        log('cancelled:', e);
+      }
+    };
+  </script>
+</body>
+</html>
