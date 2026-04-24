@@ -2,8 +2,6 @@
 
 High-performance async machinery powered by `AbortSignal`. Supports cancellation, timeouts, retries, and concurrency control.
 
-## Features
-
 * 🚀 AbortSignal-first design
 * 🔁 Retry with backoff, jitter, and conditions
 * ⏱ Timeout utilities
@@ -12,45 +10,86 @@ High-performance async machinery powered by `AbortSignal`. Supports cancellation
 * 🎛 Flow control (`debounce`, `throttle`, `latest`)
 * 🧩 Composable cancellation via `anySignal`
 
+---
+
 ## Installation
 
 ```bash
 npm i sigggnal
 ```
 
-## Philosophy
+## Usage
 
-This library treats **AbortSignal as the single control plane** for async flow.
+### Concurrency
 
-Instead of inventing new abstractions, everything is:
-
-* cancelable
-* composable
-* interoperable with Web / Node APIs
-
-## Basic Usage
-
-### Cancellation
+#### `all` (with limit)
 
 ```ts
-import { sleep } from 'sigggnal';
+import { all } from 'sigggnal';
 
-const controller = new AbortController();
-
-setTimeout(() => controller.abort('cancelled'), 1000);
-
-await sleep(3000, controller.signal); // throws
+await all([
+  (s) => fetch('/a', { signal: s }),
+  (s) => fetch('/b', { signal: s }),
+], 2);
 ```
 
-### Timeout
+#### `map`
 
 ```ts
-import { timeout } from 'sigggnal';
+import { map, sleep } from 'sigggnal';
 
-const result = await timeout(1000, async (signal) => {
-  const res = await fetch('/api', { signal });
-  return res.json();
-});
+const result = await map(
+  [1, 2, 3],
+  2,
+  async (value, signal) => {
+    await sleep(1000, signal);
+    return value * 2;
+  }
+);
+```
+
+#### `race`
+
+```ts
+import { race } from 'sigggnal';
+
+const result = await race([
+  (s) => fetch('/fast', { signal: s }),
+  (s) => fetch('/slow', { signal: s }),
+]);
+```
+
+#### `any`
+
+```ts
+import { any } from 'sigggnal';
+
+const result = await any([
+  (s) => fetch('/a', { signal: s }),
+  (s) => fetch('/b', { signal: s }),
+]);
+```
+
+#### `parallel`
+
+```ts
+import { parallel } from 'sigggnal';
+
+const result = await parallel([
+  (s) => fetch('/a', { signal: s }),
+  (s) => fetch('/b', { signal: s }),
+]);
+```
+
+#### `settled`
+
+```ts
+import { settled } from 'sigggnal';
+
+const result = await settled([
+  (s) => fetch('/a', { signal: s }),
+  (s) => fetch('/b', { signal: s }),
+]);
 ```
 
 ### Retry
@@ -67,81 +106,7 @@ const result = await retry(async (signal) => {
 });
 ```
 
-## Concurrency
-
-### `all` (with limit)
-
-```ts
-import { all } from 'sigggnal';
-
-await all([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-], 2);
-```
-
-### `map`
-
-```ts
-import { map, sleep } from 'sigggnal';
-
-const result = await map(
-  [1, 2, 3],
-  2,
-  async (value, signal) => {
-    await sleep(1000, signal);
-    return value * 2;
-  }
-);
-```
-
-### `race`
-
-```ts
-import { race } from 'sigggnal';
-
-const result = await race([
-  (s) => fetch('/fast', { signal: s }),
-  (s) => fetch('/slow', { signal: s }),
-]);
-```
-
-### `any`
-
-```ts
-import { any } from 'sigggnal';
-
-const result = await any([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
-
-### `parallel`
-
-```ts
-import { parallel } from 'sigggnal';
-
-const result = await parallel([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
-
-### `settled`
-
-```ts
-import { settled } from 'sigggnal';
-
-const result = await settled([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
-
-## Retry
-
-### Options
+#### Options
 
 ```ts
 interface RetryOptions {
@@ -156,7 +121,7 @@ interface RetryOptions {
 }
 ```
 
-### RetryContext
+### Scheduling
 
 ```ts
 interface RetryContext {
@@ -261,7 +226,7 @@ await Promise.all([
 ]);
 ```
 
-### Queue
+#### Queue
 
 ```ts
 import { createQueue } from 'sigggnal';
@@ -274,9 +239,9 @@ queue.add(() => fetch('/b'));
 await queue.onIdle();
 ```
 
-## Flow Control
+### Control
 
-### `debounce`
+#### `debounce`
 
 ```ts
 import { debounce } from 'sigggnal';
@@ -286,7 +251,7 @@ const fn = debounce(300, async (value, signal) => {
 });
 ```
 
-### `throttle`
+#### `throttle`
 
 ```ts
 import { throttle } from 'sigggnal';
@@ -296,7 +261,7 @@ const fn = throttle(1000, async (value, signal) => {
 });
 ```
 
-### `latest`
+#### `latest`
 
 ```ts
 import { latest } from 'sigggnal';
@@ -306,9 +271,9 @@ const fn = latest(async (value, signal) => {
 });
 ```
 
-## Signals
+### Signals
 
-### Combine signals
+#### Combine signals
 
 ```ts
 import { anySignal } from 'sigggnal';
@@ -319,7 +284,7 @@ const combined = anySignal(signalA, signalB);
 * Aborts when **any** signal aborts
 * Uses native `AbortSignal.any` if available
 
-### Timeout signal
+#### Timeout signal
 
 ```ts
 import { timeoutSignal } from 'sigggnal';
@@ -327,9 +292,9 @@ import { timeoutSignal } from 'sigggnal';
 const signal = timeoutSignal(1000);
 ```
 
-## Utilities
+### Utils
 
-### `sleep` (`wait`)
+#### `sleep` (`wait`)
 
 ```ts
 import { sleep } from 'sigggnal';
@@ -337,7 +302,7 @@ import { sleep } from 'sigggnal';
 await sleep(1000);
 ```
 
-### `deferred`
+#### `deferred`
 
 ```ts
 import { deferred } from 'sigggnal';
@@ -349,7 +314,7 @@ setTimeout(() => d.resolve('done'), 1000);
 await d.promise;
 ```
 
-### `once`
+#### `once`
 
 ```ts
 import { once } from 'sigggnal';
@@ -359,7 +324,7 @@ const fn = once(async () => {
 });
 ```
 
-### `memo`
+#### `memo`
 
 ```ts
 import { memo } from 'sigggnal';
