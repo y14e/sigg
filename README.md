@@ -49,48 +49,9 @@ const result = await map(
 ```
 
 #### `race`
-
-```ts
-import { race } from 'sigggnal';
-
-const result = await race([
-  (s) => fetch('/fast', { signal: s }),
-  (s) => fetch('/slow', { signal: s }),
-]);
-```
-
 #### `any`
-
-```ts
-import { any } from 'sigggnal';
-
-const result = await any([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
-
 #### `parallel`
-
-```ts
-import { parallel } from 'sigggnal';
-
-const result = await parallel([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
-
 #### `settled`
-
-```ts
-import { settled } from 'sigggnal';
-
-const result = await settled([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-]);
-```
 
 ### Retry
 
