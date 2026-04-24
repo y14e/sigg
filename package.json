@@ -1,5 +1,5 @@
 {
-  "name": "asig",
+  "name": "sigg",
   "version": "0.0.1",
   "description": "High-performance async machinery powered by AbortSignal",
   "type": "module",
@@ -33,12 +33,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/y14e/asig.git"
+    "url": "git+https://github.com/y14e/sigg.git"
   },
   "bugs": {
-    "url": "https://github.com/y14e/asig/issues"
+    "url": "https://github.com/y14e/sigg/issues"
   },
-  "homepage": "https://github.com/y14e/asig#readme",
+  "homepage": "https://github.com/y14e/sigg#readme",
   "devDependencies": {
     "bun-types": "latest",
     "tsup": "^8.0.0",
