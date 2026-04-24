@@ -82,7 +82,7 @@ interface RetryOptions {
 }
 ```
 
-### RetryContext
+#### RetryContext
 
 ```ts
 interface RetryContext {
