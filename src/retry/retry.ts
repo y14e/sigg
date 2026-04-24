@@ -1,24 +1,21 @@
 import { anySignal } from '../signal/any-signal';
 import { sleep } from '../time/sleep';
-import { timeout as _timeout } from '../time/timeout';
-import type { RetryOptions, Task } from '../types';
+import type { RetryContext, RetryOptions, Task } from '../types';
 
 export const retry = async <T>(
   callback: Task<T>,
   signal?: AbortSignal,
-  options: RetryOptions<T> = {},
+  options: RetryOptions = {},
 ): Promise<T> => {
   const {
-    factor = 2,
-    jitter = 0,
     maxRetries = 10,
-    maxTimeout = Infinity,
-    maxTotalTime,
-    minTimeout = 1000,
-    onRetry,
+    initialDelay = 1000,
+    maxDelay = Infinity,
+    backoffMultiplier = 2,
+    jitterFactor = 0,
+    shouldStop,
     retryOnResult,
-    shouldRetry,
-    timeout,
+    onRetry,
   } = options;
 
   const start = Date.now();
@@ -30,44 +27,57 @@ export const retry = async <T>(
     }
 
     const controller = new AbortController();
-    const { signal: own } = controller;
-    const combined = signal ? anySignal(signal, own) : own;
+    const combined = signal
+      ? anySignal(signal, controller.signal)
+      : controller.signal;
+
+    let result: T | undefined;
+    let error: unknown;
 
     try {
-      const result =
-        timeout !== undefined
-          ? await _timeout(timeout, callback, combined)
-          : await callback(combined);
+      result = await callback(combined);
 
       if (!retryOnResult?.(result)) {
         return result;
       }
 
-      lastError = result instanceof Error ? result : new Error(String(result));
-
-      throw lastError;
-    } catch (error) {
-      controller.abort();
+      error = result instanceof Error ? result : new Error(String(result));
       lastError = error;
+    } catch (e) {
+      error = e;
+      lastError = e;
+    }
 
-      if (
-        attempt === maxRetries ||
-        (shouldRetry && !shouldRetry(error)) ||
-        (maxTotalTime !== undefined && Date.now() - start > maxTotalTime)
-      ) {
-        throw error;
-      }
+    controller.abort();
 
-      const base = Math.min(minTimeout * factor ** attempt, maxTimeout);
-      const delay = jitter > 0 ? base * (1 + Math.random() * jitter) : base;
+    const elapsed = Date.now() - start;
 
-      onRetry?.(attempt + 1, delay, error);
+    const base = Math.min(
+      initialDelay * backoffMultiplier ** attempt,
+      maxDelay,
+    );
 
-      try {
-        await sleep(delay, signal);
-      } catch {
-        throw signal?.reason ?? error;
-      }
+    const delay =
+      jitterFactor > 0 ? base * (1 + Math.random() * jitterFactor) : base;
+
+    const context: RetryContext = {
+      attempt,
+      error,
+      result,
+      elapsed,
+      delay,
+    };
+
+    if (attempt === maxRetries || shouldStop?.(context)) {
+      throw error;
+    }
+
+    onRetry?.(context);
+
+    try {
+      await sleep(delay, signal);
+    } catch {
+      throw signal?.reason ?? error;
     }
   }
 

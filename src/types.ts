@@ -1,14 +1,24 @@
 export type Task<T> = (signal: AbortSignal) => Promise<T>;
 
-export type RetryOptions<T> = {
-  factor?: number;
-  jitter?: number;
+export interface RetryOptions {
   maxRetries?: number;
-  maxTimeout?: number;
-  maxTotalTime?: number;
-  minTimeout?: number;
-  onRetry?: (attempt: number, delay: number, error: unknown) => void;
-  shouldRetry?: (error: unknown) => boolean;
-  retryOnResult?: (value: T) => boolean;
-  timeout?: number;
-};
+
+  initialDelay?: number;
+  maxDelay?: number;
+  backoffMultiplier?: number;
+  jitterFactor?: number;
+
+  shouldStop?: (context: RetryContext) => boolean;
+
+  retryOnResult?: (result: unknown) => boolean;
+
+  onRetry?: (context: RetryContext) => void;
+}
+
+export interface RetryContext {
+  attempt: number;
+  error?: unknown;
+  result?: unknown;
+  elapsed: number;
+  delay: number;
+}

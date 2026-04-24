@@ -145,18 +145,13 @@ const result = await settled([
 
 ```ts
 interface RetryOptions {
-  maxRetries?: number;     // Maximum number of retries (default: 10)
-
-  minTimeout?: number;     // Initial delay in ms (default: 1000)
-  maxTimeout?: number;     // Maximum delay in ms (default: Infinity)
-  factor?: number;         // Backoff multiplier (default: 2)
-  jitter?: number;         // Jitter factor (0–1) (default: 0)
-
-  maxTotalTime?: number;   // Maximum total retry time in ms
-
-  retryOnError?: (error: unknown) => boolean;
+  maxRetries?: number; // Safety cap (default: 10)
+  initialDelay?: number;      // Initial delay in ms (default: 1000)
+  maxDelay?: number;          // Maximum delay in ms (default: Infinity)
+  backoffMultiplier?: number; // Backoff multiplier (default: 2)
+  jitterFactor?: number;      // Jitter factor (0–1) (default: 0)
+  shouldStop?: (context: RetryContext) => boolean;
   retryOnResult?: (result: unknown) => boolean;
-
   onRetry?: (context: RetryContext) => void;
 }
 ```
@@ -165,11 +160,90 @@ interface RetryOptions {
 
 ```ts
 interface RetryContext {
-  attempt: number;   // Current attempt (0-based)
-  error?: unknown;   // Present if retry triggered by error
-  result?: unknown;  // Present if retry triggered by result
-  delay: number;     // Next delay in ms
+  attempt: number;     // Current attempt (0-based)
+  error?: unknown;     // Error from previous attempt
+  result?: unknown;    // Result if retry triggered by result
+  elapsedTime: number; // Total elapsed time in ms
+  delay: number;       // Next delay in ms
 }
+```
+
+Retry behavior is controlled by shouldStop(context).
+
+* `true` → stop immediately
+* `false` → continue retrying
+
+### Limit retries
+
+```ts
+await retry(fn, undefined, {
+  maxRetries: 5,
+});
+```
+
+### Backoff
+
+```ts
+await retry(fn, undefined, {
+  initialDelay: 500,
+  backoffMultiplier: 2,
+  maxDelay: 5000,
+});
+```
+
+### Retry on result
+
+```ts
+await retry(async () => {
+  const res = await fetch('/api');
+  return res;
+}, undefined, {
+  retryOnResult: (res) => res.status === 503,
+});
+```
+
+### Stop after total time
+
+```ts
+await retry(fn, undefined, {
+  shouldStop: ({ elapsedTime }) => elapsedTime > 10_000,
+});
+```
+
+### Stop on specific error
+
+```ts
+await retry(fn, undefined, {
+  shouldStop: ({ error }) =>
+    error instanceof Error && error.message === 'Unauthorized',
+});
+```
+
+### Complex control
+
+```ts
+await retry(fn, undefined, {
+  shouldStop: ({ attempt, elapsedTime, error }) => {
+    if (attempt >= 5) return true;
+    if (elapsedTime > 10_000) return true;
+
+    if (error instanceof Error) {
+      if (error.message.includes('fatal')) return true;
+    }
+
+    return false;
+  },
+});
+```
+
+### onRetry
+
+```ts
+await retry(fn, undefined, {
+  onRetry: ({ attempt, delay }) => {
+    console.log(`Retry #${attempt} in ${delay}ms`);
+  },
+});
 ```
 
 ## Scheduling

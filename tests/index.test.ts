@@ -91,18 +91,6 @@ describe('sigggnal', () => {
     ).rejects.toThrow('fail');
   });
 
-  test('retry: respects timeout per attempt', async () => {
-    await expect(
-      retry(
-        async (signal) => {
-          await sleep(50, signal);
-        },
-        undefined,
-        { timeout: 10, maxRetries: 0 },
-      ),
-    ).rejects.toThrow();
-  });
-
   // ---------------------------------------------------------------------------
   // Concurrent
   // ---------------------------------------------------------------------------
