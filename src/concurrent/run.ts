@@ -1,3 +1,6 @@
+import { anySignal } from '../signal/any-signal';
+import type { Task } from '../types.js';
+
 export function run<T>(
   tasks: readonly Task<T>[],
   concurrent: number,
@@ -31,10 +34,10 @@ export function run<T>(
         const combined = signal ? anySignal(signal, own) : own;
 
         (tasks[current] as Task<T>)(combined)
-          .then((value) => {
+          .then((value: T) => {
             onSettled?.(current, { status: 'fulfilled', value });
           })
-          .catch((reason) => {
+          .catch((reason: unknown) => {
             onSettled?.(current, { status: 'rejected', reason });
           })
           .finally(() => {
