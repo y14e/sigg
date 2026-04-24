@@ -155,20 +155,9 @@ interface RetryOptions {
   maxTotalTime?: number;   // Maximum total retry time in ms
 
   shouldRetry?: (error: unknown) => boolean;
-  retryOnResult?: (result: unknown) => boolean;
+  retryOnResult?: (value: unknown) => boolean;
 
-  onRetry?: (context: RetryContext) => void;
-}
-```
-
-### RetryContext
-
-```ts
-interface RetryContext {
-  attempt: number;   // Current attempt (0-based)
-  error?: unknown;   // Present if retry triggered by error
-  result?: unknown;  // Present if retry triggered by result
-  delay: number;     // Next delay in ms
+  onRetry?: (attempt: number, delay: number, error: unknown) => void
 }
 ```
 
