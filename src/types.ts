@@ -10,4 +10,5 @@ export type RetryOptions<T> = {
   onRetry?: (attempt: number, delay: number, error: unknown) => void;
   shouldRetry?: (error: unknown) => boolean;
   retryOnResult?: (value: T) => boolean;
+  timeout?: number;
 };

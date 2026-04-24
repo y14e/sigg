@@ -1,5 +1,6 @@
 import { anySignal } from '../signal/any-signal';
 import { sleep } from '../time/sleep';
+import { timeout as _timeout } from '../time/timeout';
 import type { RetryOptions, Task } from '../types';
 
 export const retry = async <T>(
@@ -17,6 +18,7 @@ export const retry = async <T>(
     onRetry,
     retryOnResult,
     shouldRetry,
+    timeout,
   } = options;
 
   const start = Date.now();
@@ -32,12 +34,17 @@ export const retry = async <T>(
     const combined = signal ? anySignal(signal, own) : own;
 
     try {
-      const result = await callback(combined);
+      const result =
+        timeout !== undefined
+          ? await _timeout(timeout, callback, combined)
+          : await callback(combined);
 
       if (!retryOnResult?.(result)) {
         return result;
       }
+
       lastError = result instanceof Error ? result : new Error(String(result));
+
       throw lastError;
     } catch (error) {
       controller.abort();

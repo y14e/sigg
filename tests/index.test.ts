@@ -3,12 +3,14 @@ import {
   anySignal,
   timeoutSignal,
   sleep,
-  withTimeout,
+  timeout,
   retry,
   all,
   map,
   race,
   any,
+  settled,
+  parallel,
   throttle,
   debounce,
   latest,
@@ -19,7 +21,7 @@ import {
   memo,
 } from '../src/index';
 
-describe('sigm', () => {
+describe('asig', () => {
   // ---------------------------------------------------------------------------
   // Signal
   // ---------------------------------------------------------------------------
@@ -52,10 +54,12 @@ describe('sigm', () => {
     expect(Date.now() - start).toBeGreaterThanOrEqual(5);
   });
 
-  test('withTimeout: rejects on timeout', async () => {
-    await expect(withTimeout(new Promise(() => {}), 10)).rejects.toThrow(
-      'Timeout',
-    );
+  test('timeout(fn): rejects on timeout', async () => {
+    await expect(
+      timeout(10, async (signal) => {
+        await sleep(50, signal);
+      }),
+    ).rejects.toThrow('Timeout');
   });
 
   // ---------------------------------------------------------------------------
@@ -85,6 +89,18 @@ describe('sigm', () => {
         { maxRetries: 1 },
       ),
     ).rejects.toThrow('fail');
+  });
+
+  test('retry: respects timeout per attempt', async () => {
+    await expect(
+      retry(
+        async (signal) => {
+          await sleep(50, signal);
+        },
+        undefined,
+        { timeout: 10, maxRetries: 0 },
+      ),
+    ).rejects.toThrow();
   });
 
   // ---------------------------------------------------------------------------
@@ -124,6 +140,30 @@ describe('sigm', () => {
     expect(result).toBe(42);
   });
 
+  test('settled: collects all results', async () => {
+    const result = await settled([
+      async () => 1,
+      async () => {
+        throw new Error('x');
+      },
+    ]);
+
+    expect(result[0].status).toBe('fulfilled');
+    expect(result[1].status).toBe('rejected');
+  });
+
+  test('parallel: collects results without order guarantee', async () => {
+    const result = await parallel([
+      async () => {
+        await sleep(20);
+        return 1;
+      },
+      async () => 2,
+    ]);
+
+    expect(result.sort()).toEqual([1, 2]);
+  });
+
   // ---------------------------------------------------------------------------
   // Control
   // ---------------------------------------------------------------------------
@@ -136,7 +176,6 @@ describe('sigm', () => {
       return count;
     });
 
-    // awaitしないで連続実行
     const p1 = fn(1);
     const p2 = fn(2);
     const p3 = fn(3);

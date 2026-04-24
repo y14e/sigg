@@ -7,14 +7,16 @@
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) 2026 Yusuke Kamiyamane
- * @see {@link https://github.com/y14e/sigmachine} for documentation and source code.
+ * @see {@link https://github.com/y14e/sigmachine}
  */
 
 // concurrent
 export * from './concurrent/all';
 export * from './concurrent/any';
 export * from './concurrent/map';
+export * from './concurrent/parallel';
 export * from './concurrent/race';
+export * from './concurrent/settled';
 
 // control
 export * from './control/debounce';
@@ -34,7 +36,7 @@ export * from './signal/timeout-signal';
 
 // time
 export * from './time/sleep';
-export * from './time/with-timeout';
+export * from './time/timeout';
 
 // types
 export type * from './types';
