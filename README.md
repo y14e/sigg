@@ -12,6 +12,29 @@ High-performance async machinery powered by `AbortSignal`. Supports cancellation
 
 ---
 
+## Built Around AbortSignal
+
+This library is designed from the ground up with AbortSignal as a first-class primitive—not an afterthought.
+
+Instead of inventing custom cancellation APIs, everything composes naturally around the standard Web API. Every async operation accepts a signal, propagates it downstream, and reacts to it immediately.
+
+* **Cancellation is universal** — stop anything, anytime
+* **Timeouts are just signals** — no special cases
+* **Concurrency is cooperative** — tasks respect cancellation automatically
+* **Retries are interruptible** — no more waiting for backoff loops to finish
+
+Signals are merged, forwarded, and isolated per task, so complex flows stay predictable and leak-free. For example, multiple signals can be combined into one, ensuring that any upstream cancellation propagates instantly .
+
+This approach enables a consistent mental model:
+
+> If you can pass a signal, you can control it.
+
+No hidden state. No global flags. No ad-hoc cancellation logic.
+
+Just **composable, standard, AbortSignal-driven async control**.
+
+---
+
 ## Installation
 
 ```bash
@@ -309,13 +332,6 @@ import { memo } from 'sigggnal';
 
 const fn = memo((x) => x * 2);
 ```
-
-## Design Notes
-
-* Every async operation **accepts AbortSignal**
-* Internal cancellation is propagated via `AbortController`
-* Tasks are isolated and safely aborted when no longer needed
-* Native APIs (`fetch`, `setTimeout`, etc.) integrate seamlessly
 
 ## Comparison
 
