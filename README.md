@@ -132,7 +132,7 @@ await retry(async () => {
 
 ```ts
 await retry(fn, undefined, {
-  shouldStop: ({ elapsedTime }) => elapsedTime > 10_000,
+  shouldStop: ({ elapsed }) => elapsed > 10_000,
 });
 ```
 
@@ -149,9 +149,9 @@ await retry(fn, undefined, {
 
 ```ts
 await retry(fn, undefined, {
-  shouldStop: ({ attempt, elapsedTime, error }) => {
+  shouldStop: ({ attempt, elapsed, error }) => {
     if (attempt >= 5) return true;
-    if (elapsedTime > 10_000) return true;
+    if (elapsed > 10_000) return true;
 
     if (error instanceof Error) {
       if (error.message.includes('fatal')) return true;
