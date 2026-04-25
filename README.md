@@ -149,7 +149,7 @@ await retry(async () => {
   const res = await fetch('/api');
   return res;
 }, {
-  retryOnResult: (res) => res.status === 503,
+  shouldRetryResult: (res) => res.status === 503,
 }, signal);
 ```
 
