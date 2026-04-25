@@ -85,10 +85,10 @@ import { retry } from 'sigggnal';
 const result = await retry(async (signal) => {
   const res = await fetch('/api', { signal });
   return res.json();
-}, signal, {
+}, {
   maxRetries: 5,
   minTimeout: 500,
-});
+}, signal);
 ```
 
 #### RetryOptions
@@ -126,19 +126,19 @@ Retry behavior is controlled by `shouldStop(context)`.
 ### Limit retries
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   maxRetries: 5,
-});
+}, signal);
 ```
 
 ### Backoff
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   initialDelay: 500,
   backoffMultiplier: 2,
   maxDelay: 5000,
-});
+}, signal);
 ```
 
 ### Retry on result
@@ -147,32 +147,32 @@ await retry(fn, signal, {
 await retry(async () => {
   const res = await fetch('/api');
   return res;
-}, signal, {
+}, {
   retryOnResult: (res) => res.status === 503,
-});
+}, signal);
 ```
 
 ### Stop after total time
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ elapsedTime }) => elapsedTime > 10000,
-});
+}, signal);
 ```
 
 ### Stop on specific error
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ error }) =>
     error instanceof Error && error.message === 'Unauthorized',
-});
+}, signal);
 ```
 
 ### Complex control
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ attempt, elapsedTime, error }) => {
     if (attempt >= 5) return true;
     if (elapsedTime > 10000) return true;
@@ -183,17 +183,17 @@ await retry(fn, signal, {
 
     return false;
   },
-});
+}, signal);
 ```
 
 ### onRetry
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   onRetry: ({ attempt, delay }) => {
     console.log(`Retry #${attempt} in ${delay}ms`);
   },
-});
+}, signal);
 ```
 
 ## Scheduling
