@@ -71,7 +71,7 @@ const result = await retry(async (signal) => {
 
 ```ts
 interface RetryOptions {
-  maxRetries?: number; // Safety cap (default: 10)
+  maxRetries?: number;        // Safety cap (default: 10)
   initialDelay?: number;      // Initial delay in ms (default: 1000)
   maxDelay?: number;          // Maximum delay in ms (default: Infinity)
   backoffMultiplier?: number; // Backoff multiplier (default: 2)
@@ -86,15 +86,15 @@ interface RetryOptions {
 
 ```ts
 interface RetryContext {
-  attempt: number;     // Current attempt (0-based)
-  error?: unknown;     // Error from previous attempt
-  result?: unknown;    // Result if retry triggered by result
-  elapsed: number; // Total elapsed time in ms
-  delay: number;       // Next delay in ms
+  attempt: number;  // Current attempt (0-based)
+  error?: unknown;  // Error from previous attempt
+  result?: unknown; // Result if retry triggered by result
+  elapsed: number;  // Total elapsed time in ms
+  delay: number;    // Next delay in ms
 }
 ```
 
-Retry behavior is controlled by shouldStop(context).
+Retry behavior is controlled by `shouldStop(context)`.
 
 * `true` → stop immediately
 * `false` → continue retrying
