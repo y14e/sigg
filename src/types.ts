@@ -1,4 +1,8 @@
-export type Task<T> = (signal: AbortSignal) => Promise<T>;
+export interface Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T | PromiseLike<T>) => void;
+  reject: (reason?: unknown) => void;
+}
 
 export interface RetryOptions {
   maxRetries?: number;
@@ -22,3 +26,5 @@ export interface RetryContext {
   elapsed: number;
   delay: number;
 }
+
+export type Task<T> = (signal: AbortSignal) => Promise<T>;

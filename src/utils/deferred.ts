@@ -1,9 +1,11 @@
-export function deferred<T>() {
-  let resolve!: (value: T) => void;
+import type { Deferred } from '@/types';
+
+export function deferred<T>(): Deferred<T> {
+  let resolve!: (value: T | PromiseLike<T>) => void;
   let reject!: (reason?: unknown) => void;
-  const promise = new Promise<T>((r, s) => {
-    resolve = r;
-    reject = s;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
   return { promise, resolve, reject };
 }

@@ -1,20 +1,20 @@
-import { getAbortReason } from '../internal';
-import { anySignal } from '../signal/any-signal';
+import { abortReason } from '@/internal';
+import { anySignal } from '@/signal/any-signal';
 
-export function timeout<T>(
+export async function timeout<T>(
   timeout: number,
   callback: (signal: AbortSignal) => Promise<T>,
   signal?: AbortSignal,
 ): Promise<T> {
   if (signal?.aborted) {
-    return Promise.reject(getAbortReason(signal));
+    return Promise.reject(abortReason(signal));
   }
 
   const controller = new AbortController();
 
   const onAbort = () => {
     cleanup();
-    controller.abort(getAbortReason(signal));
+    controller.abort(abortReason(signal));
   };
 
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -40,7 +40,5 @@ export function timeout<T>(
   }, timeout);
 
   const { signal: own } = controller;
-  const combined = signal ? anySignal(signal, own) : own;
-
-  return callback(combined).finally(cleanup);
+  return callback(signal ? anySignal(signal, own) : own).finally(cleanup);
 }

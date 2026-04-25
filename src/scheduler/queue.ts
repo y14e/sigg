@@ -1,6 +1,6 @@
 import { createLimiter } from './limiter';
 
-export const createQueue = ({ concurrent = 1 } = {}) => {
+export const createQueue = ({ concurrency = 1 } = {}) => {
   let pending = 0;
   let idleResolvers: (() => void)[] = [];
 
@@ -17,7 +17,7 @@ export const createQueue = ({ concurrent = 1 } = {}) => {
     }
   };
 
-  const limiter = createLimiter(concurrent);
+  const limiter = createLimiter(concurrency);
 
   return {
     async add<T>(task: () => Promise<T>) {

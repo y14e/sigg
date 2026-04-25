@@ -1,9 +1,9 @@
-import type { Task } from '../types';
-import { all } from './all';
+import { all } from '@/concurrency/all';
+import type { Task } from '@/types';
 
 export function map<T, R>(
   items: T[],
-  concurrent: number,
+  concurrency: number,
   callback: (item: T, signal: AbortSignal, i: number) => Promise<R>,
   signal?: AbortSignal,
 ): Promise<R[]> {
@@ -12,5 +12,5 @@ export function map<T, R>(
       return callback(item, s, i);
     };
   });
-  return all(tasks, concurrent, signal);
+  return all(tasks, concurrency, signal);
 }

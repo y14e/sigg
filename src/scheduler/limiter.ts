@@ -1,9 +1,9 @@
-export const createLimiter = (concurrent: number) => {
+export const createLimiter = (concurrency: number) => {
   let count = 0;
   const queue: (() => void)[] = [];
 
   const next = () => {
-    if (count >= concurrent) {
+    if (count >= concurrency) {
       return;
     }
 

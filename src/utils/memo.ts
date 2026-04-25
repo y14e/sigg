@@ -2,7 +2,6 @@ export function memo<T extends unknown[], R>(
   callback: (...args: T) => Promise<R>,
 ): (...args: T) => Promise<R> {
   const cache = new Map<string, Promise<R>>();
-
   return (...args: T) => {
     let key: string;
 
@@ -13,10 +12,10 @@ export function memo<T extends unknown[], R>(
     }
 
     if (!cache.has(key)) {
-      const value = callback(...args);
-      cache.set(key, value);
+      const promise = callback(...args);
+      cache.set(key, promise);
 
-      value.catch(() => {
+      promise.catch(() => {
         cache.delete(key);
       });
     }

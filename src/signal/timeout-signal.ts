@@ -1,4 +1,4 @@
-import { getAbortReason } from '../internal';
+import { abortReason } from '@/internal';
 
 export function timeoutSignal(
   timeout: number,
@@ -8,9 +8,14 @@ export function timeoutSignal(
   const { signal: own } = controller;
 
   if (signal?.aborted) {
-    controller.abort(getAbortReason(signal));
+    controller.abort(abortReason(signal));
     return own;
   }
+
+  const onAbort = () => {
+    cleanup();
+    controller.abort(abortReason(signal));
+  };
 
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -21,11 +26,6 @@ export function timeoutSignal(
     }
 
     signal?.removeEventListener('abort', onAbort);
-  };
-
-  const onAbort = () => {
-    cleanup();
-    controller.abort(getAbortReason(signal));
   };
 
   signal?.addEventListener('abort', onAbort, { once: true });

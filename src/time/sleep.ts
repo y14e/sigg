@@ -1,15 +1,15 @@
-import { getAbortReason } from '../internal';
+import { abortReason } from '@/internal';
 
 export function sleep(timeout: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
-      reject(getAbortReason(signal));
+      reject(abortReason(signal));
       return;
     }
 
     const onAbort = () => {
       cleanup();
-      reject(getAbortReason(signal));
+      reject(abortReason(signal));
     };
 
     let timer: ReturnType<typeof setTimeout> | undefined;

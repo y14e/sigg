@@ -1,13 +1,13 @@
-import { anySignal } from '../signal/any-signal';
-import type { Task } from '../types.js';
+import { anySignal } from '@/signal/any-signal';
+import type { Task } from '@/types';
 
-export function getAbortReason(signal?: AbortSignal): unknown {
+export function abortReason(signal?: AbortSignal): unknown {
   return signal?.reason ?? new DOMException('Aborted', 'AbortError');
 }
 
-export function run<T>(
+export function runWithConcurrency<T>(
   tasks: readonly Task<T>[],
-  concurrent: number,
+  concurrency: number,
   signal?: AbortSignal,
   onSettled?: (i: number, r: PromiseSettledResult<T>) => void,
   shouldStop?: () => boolean,
@@ -28,7 +28,7 @@ export function run<T>(
         return;
       }
 
-      while (active < concurrent && index < tasks.length) {
+      while (active < concurrency && index < tasks.length) {
         const current = index;
         index += 1;
         active += 1;
@@ -55,7 +55,7 @@ export function run<T>(
       'abort',
       () => {
         finished = true;
-        reject(getAbortReason(signal));
+        reject(abortReason(signal));
       },
       { once: true },
     );

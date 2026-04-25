@@ -1,4 +1,4 @@
-import { getAbortReason } from '../internal';
+import { abortReason } from '@/internal';
 
 export function anySignal(
   ...signals: (AbortSignal | null | undefined)[]
@@ -22,6 +22,11 @@ export function anySignal(
     return AbortSignal.any(sources);
   }
 
+  const onAbort = (event: Event) => {
+    cleanup();
+    controller.abort(abortReason(event.currentTarget as AbortSignal));
+  };
+
   const { signal: result } = controller;
 
   const cleanup = () => {
@@ -32,17 +37,12 @@ export function anySignal(
     result.removeEventListener('abort', cleanup);
   };
 
-  const onAbort = (event: Event) => {
-    cleanup();
-    controller.abort(getAbortReason(event.currentTarget as AbortSignal));
-  };
-
   result.addEventListener('abort', cleanup, { once: true });
 
   for (const source of sources) {
     if (source.aborted) {
       cleanup();
-      controller.abort(getAbortReason(source));
+      controller.abort(abortReason(source));
       return result;
     }
 

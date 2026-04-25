@@ -3,7 +3,7 @@ export function once<T extends unknown[], R>(
 ): (...args: T) => Promise<R> {
   let promise: Promise<R> | undefined;
   return (...args: T) => {
-    if (!promise) {
+    if (promise === undefined) {
       promise = callback(...args);
     }
 

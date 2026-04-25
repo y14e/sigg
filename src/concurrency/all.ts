@@ -1,17 +1,17 @@
-import { run } from '../internal';
-import type { Task } from '../types';
+import { runWithConcurrency } from '@/internal';
+import type { Task } from '@/types';
 
 export async function all<T>(
   tasks: readonly Task<T>[],
-  concurrent: number,
+  concurrency: number,
   signal?: AbortSignal,
 ): Promise<T[]> {
   const results: T[] = new Array(tasks.length);
   let firstError: unknown | undefined;
 
-  await run(
+  await runWithConcurrency(
     tasks,
-    concurrent,
+    concurrency,
     signal,
     (i, result) => {
       if (result.status === 'fulfilled') {

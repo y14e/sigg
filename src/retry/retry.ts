@@ -1,6 +1,6 @@
-import { anySignal } from '../signal/any-signal';
-import { sleep } from '../time/sleep';
-import type { RetryContext, RetryOptions, Task } from '../types';
+import { anySignal } from '@/signal/any-signal';
+import { sleep } from '@/time/sleep';
+import type { RetryContext, RetryOptions, Task } from '@/types';
 
 export const retry = async <T>(
   callback: Task<T>,
