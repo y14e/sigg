@@ -87,11 +87,11 @@ interface RetryOptions {
 
 ```ts
 interface RetryContext {
-  attempt: number;  // Current attempt (0-based)
-  error?: unknown;  // Error from previous attempt
-  result?: unknown; // Result if retry triggered by result
-  elapsedTime: number;  // Total elapsed time in ms
-  delay: number;    // Next delay in ms
+  attempt: number;     // Current attempt (0-based)
+  error?: unknown;     // Error from previous attempt
+  result?: unknown;    // Result if retry triggered by result
+  elapsedTime: number; // Total elapsed time in ms
+  delay: number;       // Next delay in ms
 }
 ```
 
