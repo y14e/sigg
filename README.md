@@ -12,6 +12,29 @@ High-performance async machinery powered by `AbortSignal`. Supports cancellation
 
 ---
 
+## Built Around AbortSignal
+
+This library is designed from the ground up with AbortSignal as a first-class primitive — not an afterthought.
+
+Instead of inventing custom cancellation APIs, everything composes naturally around the standard Web API. Every async operation accepts a signal, propagates it downstream, and reacts to it immediately.
+
+* **Cancellation is universal** — stop anything, anytime
+* **Timeouts are just signals** — no special cases
+* **Concurrency is cooperative** — tasks respect cancellation automatically
+* **Retries are interruptible** — no more waiting for backoff loops to finish
+
+Signals are merged, forwarded, and isolated per task, so complex flows stay predictable and leak-free. For example, multiple signals can be combined into one, ensuring that any upstream cancellation propagates instantly .
+
+This approach enables a consistent mental model:
+
+> If you can pass a signal, you can control it.
+
+No hidden state. No global flags. No ad-hoc cancellation logic.
+
+Just **composable, standard, AbortSignal-driven async control**.
+
+---
+
 ## Installation
 
 ```bash
@@ -62,10 +85,10 @@ import { retry } from 'sigggnal';
 const result = await retry(async (signal) => {
   const res = await fetch('/api', { signal });
   return res.json();
-}, signal, {
+}, {
   maxRetries: 5,
   minTimeout: 500,
-});
+}, signal);
 ```
 
 #### RetryOptions
@@ -103,19 +126,19 @@ Retry behavior is controlled by `shouldStop(context)`.
 ### Limit retries
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   maxRetries: 5,
-});
+}, signal);
 ```
 
 ### Backoff
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   initialDelay: 500,
   backoffMultiplier: 2,
   maxDelay: 5000,
-});
+}, signal);
 ```
 
 ### Retry on result
@@ -124,32 +147,32 @@ await retry(fn, signal, {
 await retry(async () => {
   const res = await fetch('/api');
   return res;
-}, signal, {
+}, {
   retryOnResult: (res) => res.status === 503,
-});
+}, signal);
 ```
 
 ### Stop after total time
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ elapsedTime }) => elapsedTime > 10000,
-});
+}, signal);
 ```
 
 ### Stop on specific error
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ error }) =>
     error instanceof Error && error.message === 'Unauthorized',
-});
+}, signal);
 ```
 
 ### Complex control
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   shouldStop: ({ attempt, elapsedTime, error }) => {
     if (attempt >= 5) return true;
     if (elapsedTime > 10000) return true;
@@ -160,17 +183,17 @@ await retry(fn, signal, {
 
     return false;
   },
-});
+}, signal);
 ```
 
 ### onRetry
 
 ```ts
-await retry(fn, signal, {
+await retry(fn, {
   onRetry: ({ attempt, delay }) => {
     console.log(`Retry #${attempt} in ${delay}ms`);
   },
-});
+}, signal);
 ```
 
 ## Scheduling
@@ -309,13 +332,6 @@ import { memo } from 'sigggnal';
 
 const fn = memo((x) => x * 2);
 ```
-
-## Design Notes
-
-* Every async operation **accepts AbortSignal**
-* Internal cancellation is propagated via `AbortController`
-* Tasks are isolated and safely aborted when no longer needed
-* Native APIs (`fetch`, `setTimeout`, etc.) integrate seamlessly
 
 ## Comparison
 
