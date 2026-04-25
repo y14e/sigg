@@ -253,7 +253,7 @@ import { timeoutSignal } from 'sigggnal';
 
 const controller = new AbortController();
 
-await timeout(1000, fn, controller.signal);
+await timeoutSignal(1000, controller.signal);
 ```
 
 ### Time
