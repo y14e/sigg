@@ -50,7 +50,7 @@ export const retry = async <T>(
 
     controller.abort();
 
-    const elapsed = Date.now() - start;
+    const elapsedTime = Date.now() - start;
 
     const base = Math.min(
       initialDelay * backoffMultiplier ** attempt,
@@ -64,7 +64,7 @@ export const retry = async <T>(
       attempt,
       error,
       result,
-      elapsed,
+      elapsedTime,
       delay,
     };
 

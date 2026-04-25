@@ -23,7 +23,7 @@ export interface RetryContext {
   attempt: number;
   error?: unknown;
   result?: unknown;
-  elapsed: number;
+  elapsedTime: number;
   delay: number;
 }
 
