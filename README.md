@@ -30,7 +30,7 @@ import { all } from 'sigggnal';
 await all([
   (s) => fetch('/a', { signal: s }),
   (s) => fetch('/b', { signal: s }),
-], 2);
+], 2, signal);
 ```
 
 #### `map`
@@ -44,7 +44,8 @@ const result = await map(
   async (value, signal) => {
     await sleep(1000, signal);
     return value * 2;
-  }
+  },
+  signal
 );
 ```
 
@@ -250,7 +251,11 @@ const combined = anySignal(signalA, signalB);
 ```ts
 import { timeoutSignal } from 'sigggnal';
 
-const signal = timeoutSignal(1000);
+const controller = new AbortController();
+
+await timeout(1000, async (signal) => {
+  await fetch('/api', { signal });
+}, controller.signal);
 ```
 
 ### Utils
