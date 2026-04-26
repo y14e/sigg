@@ -8,7 +8,7 @@ export function abortReason(signal?: AbortSignal): unknown {
 export function runWithConcurrency<T>(
   tasks: readonly Task<T>[],
   concurrency: number,
-  onSettled?: (i: number, r: PromiseSettledResult<T>) => void,
+  onSettled?: (result: PromiseSettledResult<T>, index: number) => void,
   shouldStop?: () => boolean,
   signal?: AbortSignal,
 ): Promise<void> {
@@ -39,10 +39,10 @@ export function runWithConcurrency<T>(
 
         (tasks[current] as Task<T>)(combined)
           .then((value: T) => {
-            onSettled?.(current, { status: 'fulfilled', value });
+            onSettled?.({ status: 'fulfilled', value }, current);
           })
           .catch((reason: unknown) => {
-            onSettled?.(current, { status: 'rejected', reason });
+            onSettled?.({ status: 'rejected', reason }, current);
           })
           .finally(() => {
             active--;

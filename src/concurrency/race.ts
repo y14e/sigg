@@ -11,14 +11,14 @@ export const race = <T>(
       return reject(abortReason(signal));
     }
 
-    const cleanup = (): void => {
+    const cleanup = () => {
       signal?.removeEventListener('abort', onAbort);
     };
 
     let isSettled = false;
     const controllers: AbortController[] = [];
 
-    const settle = (callback: () => void, reason?: unknown): void => {
+    const settle = (callback: () => void, reason?: unknown) => {
       if (isSettled) {
         return;
       }
@@ -33,7 +33,7 @@ export const race = <T>(
       callback();
     };
 
-    const onAbort = (): void => {
+    const onAbort = () => {
       const reason = abortReason(signal);
       settle(() => reject(reason), reason);
     };

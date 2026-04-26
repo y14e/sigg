@@ -14,7 +14,7 @@ export function timeoutSignal(
 
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const cleanup = (): void => {
+  const cleanup = () => {
     if (timer !== undefined) {
       clearTimeout(timer);
       timer = undefined;
@@ -23,7 +23,7 @@ export function timeoutSignal(
     signal?.removeEventListener('abort', onAbort);
   };
 
-  const onAbort = (): void => {
+  const onAbort = () => {
     cleanup();
     controller.abort(abortReason(signal));
   };
@@ -31,7 +31,7 @@ export function timeoutSignal(
   signal?.addEventListener('abort', onAbort, { once: true });
   own.addEventListener('abort', cleanup, { once: true });
 
-  timer = setTimeout((): void => {
+  timer = setTimeout(() => {
     controller.abort(
       new DOMException(
         `The operation timed out (${timeout}ms)`,

@@ -9,7 +9,7 @@ export function sleep(timeout: number, signal?: AbortSignal): Promise<void> {
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const cleanup = (): void => {
+    const cleanup = () => {
       if (timer !== undefined) {
         clearTimeout(timer);
         timer = undefined;
@@ -18,7 +18,7 @@ export function sleep(timeout: number, signal?: AbortSignal): Promise<void> {
       signal?.removeEventListener('abort', onAbort);
     };
 
-    const onAbort = (): void => {
+    const onAbort = () => {
       cleanup();
       reject(abortReason(signal));
     };

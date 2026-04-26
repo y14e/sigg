@@ -24,7 +24,7 @@ export function anySignal(
 
   const { signal: own } = controller;
 
-  const cleanup = (): void => {
+  const cleanup = () => {
     for (const source of sources) {
       source.removeEventListener('abort', onAbort);
     }
@@ -32,7 +32,7 @@ export function anySignal(
     own.removeEventListener('abort', cleanup);
   };
 
-  const onAbort = (event: Event): void => {
+  const onAbort = (event: Event) => {
     cleanup();
     controller.abort(abortReason(event.currentTarget as AbortSignal));
   };

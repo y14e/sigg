@@ -9,7 +9,7 @@ export async function parallel<T>(
   await runWithConcurrency(
     tasks,
     concurrency,
-    (_, result) => {
+    (result) => {
       if (result.status === 'fulfilled') {
         results.push(result.value);
       }

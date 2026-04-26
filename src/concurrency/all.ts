@@ -11,7 +11,7 @@ export async function all<T>(
   await runWithConcurrency(
     tasks,
     concurrency,
-    (index, result) => {
+    (result, index) => {
       if (result.status === 'fulfilled') {
         results[index] = result.value;
       } else if (firstError === undefined) {

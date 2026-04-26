@@ -12,7 +12,7 @@ export async function timeout<T>(
 
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const cleanup = (): void => {
+  const cleanup = () => {
     if (timer !== undefined) {
       clearTimeout(timer);
       timer = undefined;
@@ -23,7 +23,7 @@ export async function timeout<T>(
 
   const controller = new AbortController();
 
-  const onAbort = (): void => {
+  const onAbort = () => {
     cleanup();
     controller.abort(abortReason(signal));
   };

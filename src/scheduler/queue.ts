@@ -12,7 +12,7 @@ export const createQueue = ({
   return {
     async add(task) {
       pending++;
-      return limiter(async () => task()).finally(() => {
+      return limiter(task).finally(() => {
         pending--;
 
         if (pending > 0 || idleResolvers.length === 0) {
