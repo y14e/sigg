@@ -3,9 +3,10 @@ import { abortReason } from '@/internal';
 export function anySignal(
   ...signals: (AbortSignal | null | undefined)[]
 ): AbortSignal {
-  const sources = signals.filter((signal): signal is AbortSignal => {
-    return typeof signal === 'object' && signal !== null && 'aborted' in signal;
-  });
+  const sources = signals.filter(
+    (signal): signal is AbortSignal =>
+      typeof signal === 'object' && signal !== null && 'aborted' in signal,
+  );
 
   const controller = new AbortController();
 
