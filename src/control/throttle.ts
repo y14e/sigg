@@ -8,12 +8,11 @@ export function throttle<T, R>(
   callback: (value: T, signal: AbortSignal) => Promise<R>,
   options: ThrottleOptions = {},
 ) {
-  const { leading = true, trailing = true } = options;
-
-  let lastTime = 0;
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  let lastArgs: T | null = null;
   let controller: AbortController | null = null;
+  let lastTime = 0;
+  let lastArgs: T | null = null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const { leading = true, trailing = true } = options;
 
   const invoke = (value: T) => {
     controller?.abort();
@@ -28,9 +27,9 @@ export function throttle<T, R>(
     lastArgs = value;
 
     if (remaining <= 0) {
-      if (timer) {
+      if (timer !== undefined) {
         clearTimeout(timer);
-        timer = null;
+        timer = undefined;
       }
 
       if (leading) {
@@ -38,10 +37,10 @@ export function throttle<T, R>(
       }
     }
 
-    if (trailing && !timer) {
+    if (trailing && timer === undefined) {
       return new Promise<R | undefined>((resolve, reject) => {
         timer = setTimeout(() => {
-          timer = null;
+          timer = undefined;
 
           if (lastArgs !== null) {
             invoke(lastArgs).then(resolve, reject);
