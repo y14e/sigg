@@ -374,7 +374,7 @@ Adapts a function to work with composed signals. Combines parent and internal si
 
 ```ts
 withSignal(fn, signal);
-// => (...args) => (parent?) => (own) => Promise<T>
+// => (...args) => (parent?) => (internal) => Promise<T>
 //
 // fn: (signal, ...args) => Promise<T>
 ```
