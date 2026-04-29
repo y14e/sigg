@@ -355,8 +355,10 @@ abortable(promise, signal);
 Combines multiple signals into one. Aborts when any of the input signals abort.
 
 ```ts
-anySignal(signal1, signal2, /* ..., */ signalN);
+anySignal(...signals);
 // => AbortSignal
+//
+// ...signals: AbortSignal[]
 ```
 
 ### timeoutSignal
