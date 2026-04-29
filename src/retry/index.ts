@@ -3,7 +3,7 @@ import { sleep } from '@/time/sleep';
 import type { RetryContext, RetryOptions, Task } from '@/types';
 
 export async function retry<T>(
-  callback: Task<T>,
+  fn: Task<T>,
   optionsOrSignal?: RetryOptions<T> | AbortSignal,
   maybeSignal?: AbortSignal,
 ): Promise<T> {
@@ -50,7 +50,7 @@ export async function retry<T>(
       jitterFactor > 0 ? base * (1 + Math.random() * jitterFactor) : base;
 
     try {
-      const result = await callback(combined);
+      const result = await fn(combined);
 
       if (!shouldRetryResult?.(result)) {
         return result;

@@ -1,6 +1,6 @@
 export function debounce<T, R>(
   delay: number,
-  callback: (value: T, signal: AbortSignal) => Promise<R>,
+  fn: (value: T, signal: AbortSignal) => Promise<R>,
 ): (value: T) => Promise<R> {
   let controller: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -17,7 +17,7 @@ export function debounce<T, R>(
 
     return new Promise<R>((resolve, reject) => {
       timer = setTimeout(() => {
-        callback(value, controller?.signal as AbortSignal).then(
+        fn(value, controller?.signal as AbortSignal).then(
           resolve,
           reject,
         );

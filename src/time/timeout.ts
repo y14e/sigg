@@ -3,7 +3,7 @@ import { anySignal } from '@/signal/any-signal';
 
 export async function timeout<T>(
   timeout: number,
-  callback: (signal: AbortSignal) => Promise<T>,
+  fn: (signal: AbortSignal) => Promise<T>,
   signal?: AbortSignal,
 ): Promise<T> {
   if (signal?.aborted) {
@@ -40,7 +40,7 @@ export async function timeout<T>(
   }, timeout);
 
   const { signal: internalSignal } = controller;
-  return callback(
+  return fn(
     signal ? anySignal(signal, internalSignal) : internalSignal,
   ).finally(cleanup);
 }

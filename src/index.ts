@@ -3,7 +3,7 @@
  * High-performance async machinery powered by AbortSignal.
  * Supports cancellation, timeouts, retries, and concurrency control.
  *
- * @version 0.1.2
+ * @version 0.1.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) 2026 Yusuke Kamiyamane

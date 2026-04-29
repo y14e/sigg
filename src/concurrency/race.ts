@@ -18,7 +18,7 @@ export function race<T>(
     let isSettled = false;
     const controllers: AbortController[] = [];
 
-    const settle = (callback: () => void, reason?: unknown) => {
+    const settle = (fn: () => void, reason?: unknown) => {
       if (isSettled) {
         return;
       }
@@ -30,7 +30,7 @@ export function race<T>(
         controller.abort(reason);
       });
 
-      callback();
+      fn();
     };
 
     const onAbort = () => {

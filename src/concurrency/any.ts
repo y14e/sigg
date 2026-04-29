@@ -22,7 +22,7 @@ export function any<T>(
     let isSettled = false;
     const controllers: AbortController[] = [];
 
-    const settle = (callback: () => void, reason?: unknown) => {
+    const settle = (fn: () => void, reason?: unknown) => {
       if (isSettled) {
         return;
       }
@@ -34,7 +34,7 @@ export function any<T>(
         controller.abort(reason);
       });
 
-      callback();
+      fn();
     };
 
     const onAbort = () => {

@@ -1,10 +1,10 @@
 import { anySignal } from './any-signal';
 
 export function withSignal<T extends unknown[], R>(
-  callback: (signal: AbortSignal, ...args: T) => Promise<R>,
+  fn: (signal: AbortSignal, ...args: T) => Promise<R>,
 ) {
   return (...args: T) =>
     (parent?: AbortSignal) =>
     (internal: AbortSignal) =>
-      callback(parent ? anySignal(parent, internal) : internal, ...args);
+      fn(parent ? anySignal(parent, internal) : internal, ...args);
 }

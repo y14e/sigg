@@ -7,33 +7,28 @@ export interface Deferred<T> {
 export type RetryContext<T = unknown> =
   | {
       attempt: number;
-      status: 'fulfilled';
-      result: T;
-
-      elapsedTime: number;
       delay: number;
+      elapsedTime: number;
+      result: T;
+      status: 'fulfilled';
     }
   | {
       attempt: number;
-      status: 'rejected';
-      error: unknown;
-
-      elapsedTime: number;
       delay: number;
+      elapsedTime: number;
+      error: unknown;
+      status: 'rejected';
     };
 
 export interface RetryOptions<T = unknown> {
-  maxRetries?: number;
-
-  initialDelay?: number;
-  maxDelay?: number;
   backoffMultiplier?: number;
+  initialDelay?: number;
   jitterFactor?: number;
-
+  maxDelay?: number;
+  maxRetries?: number;
+  onRetry?: (context: RetryContext<T>) => void;
   shouldRetryResult?: (result: T) => boolean;
   shouldStop?: (context: RetryContext<T>) => boolean;
-
-  onRetry?: (context: RetryContext<T>) => void;
 }
 
 export type Task<T> = (signal: AbortSignal) => Promise<T>;

@@ -5,7 +5,7 @@ type ThrottleOptions = {
 
 export function throttle<T, R>(
   delay: number,
-  callback: (value: T, signal: AbortSignal) => Promise<R>,
+  fn: (value: T, signal: AbortSignal) => Promise<R>,
   options: ThrottleOptions = {},
 ): (value: T) => Promise<R | undefined> {
   let controller: AbortController | null = null;
@@ -18,7 +18,7 @@ export function throttle<T, R>(
     controller?.abort();
     controller = new AbortController();
     lastTime = Date.now();
-    return callback(value, controller.signal);
+    return fn(value, controller.signal);
   };
 
   return (value: T): Promise<R | undefined> => {

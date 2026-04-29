@@ -1,6 +1,6 @@
 export function createLimiter<T>(
   concurrency: number,
-): (callback: () => Promise<T>) => Promise<T> {
+): (fn: () => Promise<T>) => Promise<T> {
   let attempt = 0;
   const queue: (() => void)[] = [];
 
@@ -19,10 +19,10 @@ export function createLimiter<T>(
     job();
   };
 
-  return (callback) =>
+  return (fn) =>
     new Promise((resolve, reject) => {
       queue[queue.length] = () =>
-        callback()
+        fn()
           .then(resolve)
           .catch(reject)
           .finally(() => {
