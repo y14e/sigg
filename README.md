@@ -72,7 +72,7 @@ import { all, any, map, parallel, race, setttled } from 'sigggnal';
 all(tasks, 3, signal);
 // => Promise<T[]>
 //
-// tasks: (signal) => Promise<T>[]
+// tasks: ((signal) => Promise<T>)[]
 ```
 
 #### any
@@ -81,7 +81,7 @@ all(tasks, 3, signal);
 any(tasks, signal);
 // => Promise<T>
 //
-// tasks: (signal) => Promise<T>[]
+// tasks: ((signal) => Promise<T>)[]
 ```
 
 #### map
@@ -100,7 +100,7 @@ map(items, 3, fn, signal);
 parallel(tasks, 3, signal);
 // => Promise<T[]>
 //
-// tasks: (signal) => Promise<T>[]
+// tasks: ((signal) => Promise<T>)[]
 ```
 
 #### race
@@ -109,7 +109,7 @@ parallel(tasks, 3, signal);
 race(tasks, signal);
 // => Promise<T>
 //
-// tasks: (signal) => Promise<T>[]
+// tasks: ((signal) => Promise<T>)[]
 ```
 
 #### settled
@@ -118,7 +118,7 @@ race(tasks, signal);
 settled(tasks, 3, signal);
 // => Promise<T[]>
 //
-// tasks: (signal) => Promise<T>[]
+// tasks: ((signal) => Promise<T>)[]
 ```
 
 ---
