@@ -341,8 +341,6 @@ abortable(promise, signal);
 
 #### anySignal
 
-Uses native `AbortSignal.any` if available.
-
 ```ts
 anySignal(signal1, signal2, /* ..., */ signalN);
 // => AbortSignal
