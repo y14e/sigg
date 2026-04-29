@@ -70,10 +70,12 @@ import { all, any, map, parallel, race, settled } from 'sigggnal';
 Runs tasks with limited concurrency. Resolves when all tasks succeed, or rejects on the first error.
 
 ```ts
-all(tasks, 3, signal);
+all(tasks, concurrency, signal?);
 // => Promise<T[]>
 //
 // tasks: ((signal) => Promise<T>)[]
+// concurrency: number
+// signal: AbortSignal
 ```
 
 ### any
@@ -81,10 +83,11 @@ all(tasks, 3, signal);
 Resolves with the first fulfilled result. Rejects if all tasks fail.
 
 ```ts
-any(tasks, signal);
+any(tasks, signal?);
 // => Promise<T>
 //
 // tasks: ((signal) => Promise<T>)[]
+// signal: AbortSignal
 ```
 
 ### map
@@ -92,11 +95,13 @@ any(tasks, signal);
 Maps items to async tasks with limited concurrency. Resolves with results in the same order as input.
 
 ```ts
-map(items, 3, fn, signal);
+map(items, concurrency, fn, signal?);
 // => Promise<R[]>
 //
 // items: T[]
+// concurrency: number
 // fn: (item, index, signal) => Promise<R>
+// signal: AbortSignal
 ```
 
 ### parallel
@@ -104,10 +109,12 @@ map(items, 3, fn, signal);
 Runs tasks in parallel with optional concurrency control. Resolves with all fulfilled results (errors are ignored).
 
 ```ts
-parallel(tasks, 3, signal);
+parallel(tasks, concurrency, signal?);
 // => Promise<T[]>
 //
 // tasks: ((signal) => Promise<T>)[]
+// concurrency: number
+// signal: AbortSignal
 ```
 
 ### race
@@ -115,10 +122,11 @@ parallel(tasks, 3, signal);
 Resolves or rejects as soon as one task settles. Cancels all remaining tasks.
 
 ```ts
-race(tasks, signal);
+race(tasks, signal?);
 // => Promise<T>
 //
 // tasks: ((signal) => Promise<T>)[]
+// signal: AbortSignal
 ```
 
 ### settled
@@ -126,10 +134,12 @@ race(tasks, signal);
 Runs all tasks and collects their results. Always resolves with the outcome of each task.
 
 ```ts
-settled(tasks, 3, signal);
+settled(tasks, concurrency, signal?);
 // => Promise<T[]>
 //
 // tasks: ((signal) => Promise<T>)[]
+// concurrency: number
+// signal: AbortSignal
 ```
 
 ---
@@ -148,9 +158,10 @@ import { debounce, latest, throttle } from 'sigggnal';
 Debounces async calls. Only the last call is executed; previous pending calls are canceled.
 
 ```ts
-debounce(300, fn);
+debounce(delay, fn);
 // => (value) => Promise<T>
 //
+// delay: number (ms)
 // fn: (value, signal) => Promise<T>
 ```
 
@@ -170,9 +181,10 @@ latest(fn);
 Throttles async calls to run at most once per interval. Supports leading and trailing execution.
 
 ```ts
-throttle(300, fn, { leading: true, trailing: true });
+throttle(delay, fn, { leading: true, trailing: true });
 // => (value) => Promise<T>
 //
+// delay: number (ms)
 // fn: (value, signal) => Promise<T>
 ```
 
@@ -346,8 +358,11 @@ import { abortable, anySignal, timeoutSignal, withSignal } from 'sigggnal';
 Wraps a promise to make it abortable. Rejects if the signal is aborted.
 
 ```ts
-abortable(promise, signal);
+abortable(promise, signal?);
 // => Promise<T>
+//
+// promise: Promise<T>
+// signal: AbortSignal
 ```
 
 ### anySignal
@@ -366,8 +381,11 @@ anySignal(...signals);
 Creates a signal that aborts after a timeout. Also propagates abort from the parent signal.
 
 ```ts
-timeoutSignal(1000, signal);
+timeoutSignal(timeout, signal?);
 // => AbortSignal
+//
+// timeout: number (ms)
+// signal: AbortSignal
 ```
 
 ### withSignal
@@ -375,7 +393,7 @@ timeoutSignal(1000, signal);
 Adapts a function to work with composed signals. Combines parent and internal signals into a single one.
 
 ```ts
-withSignal(fn, signal);
+withSignal(fn);
 // => (...args) => (parent?) => (internal) => Promise<T>
 //
 // fn: (signal, ...args) => Promise<T>
@@ -394,20 +412,25 @@ import { sleep, timeout } from 'sigggnal';
 ### sleep (wait)
 
 ```ts
-sleep(1000, signal);
+sleep(timeout, signal?);
 // => Promise<void>
+//
+// timeout: number (ms)
+// signal: AbortSignal
 
-// alias
+// Alias
 wait(1000, signal);
 ```
 
 ### timeout
 
 ```ts
-timeout(1000, fn, signal);
+timeout(timeout, fn, signal?);
 // => Promise<T>
 //
+// timeout: number (ms)
 // fn: (signal) => Promise<T>
+// signal: AbortSignal
 ```
 
 ---
