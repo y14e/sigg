@@ -45,37 +45,97 @@ npm i sigggnal
 
 ### Concurrency
 
-#### `all` (with limit)
-
 ```ts
-import { all } from 'sigggnal';
-
-await all([
-  (s) => fetch('/a', { signal: s }),
-  (s) => fetch('/b', { signal: s }),
-], 2, signal);
+import { all, any, map, parallel, race, setttled } from 'sigggnal';
 ```
 
-#### `map`
+#### all
 
 ```ts
-import { map, sleep } from 'sigggnal';
-
-const result = await map(
-  [1, 2, 3],
-  2,
-  async (value, signal) => {
-    await sleep(1000, signal);
-    return value * 2;
-  },
-  signal
-);
+all(tasks, 3, signal);
+// => Promise<T[]>
+//
+// tasks: (signal) => Promise<T>[]
 ```
 
-#### `race`
-#### `any`
-#### `parallel`
-#### `settled`
+#### any
+
+```ts
+any(tasks, signal);
+// => Promise<T>
+//
+// tasks: (signal) => Promise<T>[]
+```
+
+#### map
+
+```ts
+map(items, 3, fn, signal);
+// => Promise<T[]>
+//
+// items: []
+// fn: (item, index, signal) => Promise<T>
+```
+
+#### parallel
+
+```ts
+parallel(tasks, 3, signal);
+// => Promise<T[]>
+//
+// tasks: (signal) => Promise<T>[]
+```
+
+#### race
+
+```ts
+race(tasks, 3, signal);
+// => Promise<T>
+//
+// tasks: (signal) => Promise<T>[]
+```
+
+#### settled
+
+```ts
+settled(tasks, 3, signal);
+// => Promise<T[]>
+//
+// tasks: (signal) => Promise<T>[]
+```
+
+### Control
+
+```ts
+import { debounce, latest, throttle } from 'sigggnal';
+```
+
+#### debounce
+
+```ts
+debounce(300, fn);
+// => (value) => Promise<T>
+//
+// fn: (value, signal) => Promise<T>
+```
+
+#### latest
+
+```ts
+latest(fn);
+// => (value) => Promise<T>
+//
+// fn: (value, signal) => Promise<T>
+```
+
+#### throttle
+
+```ts
+throttle(300, fn, { leading: true, trailing: true });
+// => (value) => Promise<T>
+//
+// fn: (value, signal) => Promise<T>
+```
 
 ### Retry
 
@@ -124,7 +184,10 @@ Retry behavior is controlled by `shouldStop(context)`.
 * `true` → stop immediately
 * `false` → continue retrying
 
-### Limit retries
+<details>
+<summary>Retry details</summary>
+
+#### Limit retries
 
 ```ts
 await retry(fn, {
@@ -132,7 +195,7 @@ await retry(fn, {
 }, signal);
 ```
 
-### Backoff
+#### Backoff
 
 ```ts
 await retry(fn, {
@@ -142,7 +205,7 @@ await retry(fn, {
 }, signal);
 ```
 
-### Retry on result
+#### Retry on result
 
 ```ts
 await retry(async () => {
@@ -153,7 +216,7 @@ await retry(async () => {
 }, signal);
 ```
 
-### Stop after total time
+#### Stop after total time
 
 ```ts
 await retry(fn, {
@@ -161,7 +224,7 @@ await retry(fn, {
 }, signal);
 ```
 
-### Stop on specific error
+#### Stop on specific error
 
 ```ts
 await retry(fn, {
@@ -170,7 +233,7 @@ await retry(fn, {
 }, signal);
 ```
 
-### Complex control
+#### Complex control
 
 ```ts
 await retry(fn, {
@@ -187,7 +250,7 @@ await retry(fn, {
 }, signal);
 ```
 
-### onRetry
+#### onRetry
 
 ```ts
 await retry(fn, {
@@ -196,14 +259,17 @@ await retry(fn, {
   },
 }, signal);
 ```
+</details>
 
-## Scheduling
-
-### Limiter
+### Scheduler
 
 ```ts
-import { createLimiter } from 'sigggnal';
+import { createLimiter, createQueue } from 'sigggnal';
+```
 
+#### Limiter
+
+```ts
 const limit = createLimiter(2);
 
 await Promise.all([
@@ -215,8 +281,6 @@ await Promise.all([
 #### Queue
 
 ```ts
-import { createQueue } from 'sigggnal';
-
 const queue = createQueue({ concurrent: 2 });
 
 queue.add(() => fetch('/a'));
@@ -225,90 +289,78 @@ queue.add(() => fetch('/b'));
 await queue.onIdle();
 ```
 
-### Control
-
-#### `debounce`
+### Signal
 
 ```ts
-import { debounce } from 'sigggnal';
-
-const fn = debounce(300, async (value, signal) => {
-  return fetch(`/search?q=${value}`, { signal });
-});
+import { abortable, anySignal, timeoutSignal, withSignal } from 'sigggnal';
 ```
 
-#### `throttle`
+#### abortable
 
 ```ts
-import { throttle } from 'sigggnal';
-
-const fn = throttle(1000, async (value, signal) => {
-  return fetch(`/data?q=${value}`, { signal });
-});
+abortable(promise, signal);
+// => Promise<T>
 ```
 
-#### `latest`
+#### anySignal
+
+Uses native `AbortSignal.any` if available.
 
 ```ts
-import { latest } from 'sigggnal';
-
-const fn = latest(async (value, signal) => {
-  return fetch(`/data?q=${value}`, { signal });
-});
+anySignal(signal1, signal2, /* ..., */ signalN);
+// => AbortSignal
 ```
 
-### Signals
-
-#### Combine signals
+#### timeoutSignal
 
 ```ts
-import { anySignal } from 'sigggnal';
-
-const combined = anySignal(signalA, signalB);
+timeoutSignal(1000, signal);
+// => AbortSignal
 ```
 
-* Aborts when **any** signal aborts
-* Uses native `AbortSignal.any` if available
-
-#### Timeout signal
+#### withSignal
 
 ```ts
-import { timeoutSignal } from 'sigggnal';
-
-const controller = new AbortController();
-
-await timeoutSignal(1000, controller.signal);
+withSignal(fn, signal);
+// => Promise<T>
+//
+// fn: (signal, ...args) => Promise<T>
 ```
 
 ### Time
 
-#### `sleep` (`wait`)
-
 ```ts
-import { sleep } from 'sigggnal';
-
-const controller = new AbortController();
-
-await sleep(1000, controller.signal);
+import { sleep, timeout } from 'sigggnal';
 ```
 
-#### `timeout`
+#### sleep (wait)
 
 ```ts
-import { timeout } from 'sigggnal';
+sleep(1000, signal);
+// => Promise<void>
 
-const controller = new AbortController();
+// alias
+wait(1000, signal);
+```
 
-await timeout(1000, fn, signal);
+#### timeout
+
+```ts
+timeout(1000, fn, signal);
+// => Promise<T>
+//
+// fn: (signal) => Promise<T>
 ```
 
 ### Utils
 
-#### `deferred`
+```ts
+import { deferred, memo, once } from 'sigggnal';
+```
+
+#### deferred
 
 ```ts
-import { deferred } from 'sigggnal';
-
 const d = deferred();
 
 setTimeout(() => d.resolve('done'), 1000);
@@ -316,23 +368,20 @@ setTimeout(() => d.resolve('done'), 1000);
 await d.promise;
 ```
 
-#### `once`
+#### memo
 
 ```ts
-import { once } from 'sigggnal';
+const fn = memo((x) => x * 2, { ttl: 5000 });
+```
 
+#### once
+
+```ts
 const fn = once(async () => {
   console.log('called once');
 });
 ```
 
-#### `memo`
-
-```ts
-import { memo } from 'sigggnal';
-
-const fn = memo((x) => x * 2);
-```
 
 ## Comparison
 
