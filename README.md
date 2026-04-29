@@ -68,6 +68,8 @@ import { all, any, map, parallel, race, setttled } from 'sigggnal';
 
 #### all
 
+Runs tasks with limited concurrency. Resolves when all tasks succeed, or rejects on the first error.
+
 ```ts
 all(tasks, 3, signal);
 // => Promise<T[]>
@@ -76,6 +78,8 @@ all(tasks, 3, signal);
 ```
 
 #### any
+
+Runs tasks with limited concurrency. Resolves when all tasks succeed, or rejects on the first error.
 
 ```ts
 any(tasks, signal);
@@ -86,15 +90,19 @@ any(tasks, signal);
 
 #### map
 
+Maps items to async tasks with limited concurrency. Resolves with results in the same order as input.
+
 ```ts
 map(items, 3, fn, signal);
-// => Promise<T[]>
+// => Promise<R[]>
 //
-// items: []
-// fn: (item, index, signal) => Promise<T>
+// items: T[]
+// fn: (item, index, signal) => Promise<R>
 ```
 
 #### parallel
+
+Runs tasks in parallel with optional concurrency control. Resolves with all fulfilled results (errors are ignored).
 
 ```ts
 parallel(tasks, 3, signal);
@@ -105,6 +113,8 @@ parallel(tasks, 3, signal);
 
 #### race
 
+Resolves or rejects as soon as one task settles. Cancels all remaining tasks.
+
 ```ts
 race(tasks, signal);
 // => Promise<T>
@@ -113,6 +123,8 @@ race(tasks, signal);
 ```
 
 #### settled
+
+Runs all tasks and collects their results. Always resolves with the outcome of each task.
 
 ```ts
 settled(tasks, 3, signal);
@@ -135,6 +147,8 @@ import { debounce, latest, throttle } from 'sigggnal';
 
 #### debounce
 
+Debounces async calls. Only the last call is executed; previous pending calls are canceled.
+
 ```ts
 debounce(300, fn);
 // => (value) => Promise<T>
@@ -144,6 +158,8 @@ debounce(300, fn);
 
 #### latest
 
+Ensures only the latest call is active. Previous calls are canceled when a new one starts.
+
 ```ts
 latest(fn);
 // => (value) => Promise<T>
@@ -152,6 +168,8 @@ latest(fn);
 ```
 
 #### throttle
+
+Throttles async calls to run at most once per interval. Supports leading and trailing execution.
 
 ```ts
 throttle(300, fn, { leading: true, trailing: true });
