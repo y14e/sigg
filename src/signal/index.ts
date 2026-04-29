@@ -1,4 +1,4 @@
-export * from './abortable';
-export * from './any-signal';
-export * from './timeout-signal';
-export * from './with-signal';
+export { abortable } from './abortable';
+export { anySignal } from './any-signal';
+export { timeoutSignal } from './timeout-signal';
+export { withSignal } from './with-signal';

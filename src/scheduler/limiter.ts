@@ -1,6 +1,6 @@
-export const createLimiter = (
+export function createLimiter<T>(
   concurrency: number,
-): (<T>(callback: () => Promise<T>) => Promise<T>) => {
+): (callback: () => Promise<T>) => Promise<T> {
   let attempt = 0;
   const queue: (() => void)[] = [];
 
@@ -31,4 +31,4 @@ export const createLimiter = (
           });
       next();
     });
-};
+}

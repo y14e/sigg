@@ -1,2 +1,2 @@
-export * from './limiter';
-export * from './queue';
+export { createLimiter } from './limiter';
+export { createQueue } from './queue';

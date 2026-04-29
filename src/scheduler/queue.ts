@@ -1,17 +1,15 @@
 import { createLimiter } from './limiter';
 
-export const createQueue = ({
-  concurrency = 1,
-} = {}): {
+export function createQueue({ concurrency = 1 } = {}): {
   add<T>(task: () => Promise<T>): Promise<T>;
   onIdle(): Promise<void>;
-} => {
+} {
   let pending = 0;
   const limiter = createLimiter(concurrency);
   let idleResolvers: (() => void)[] = [];
 
   return {
-    async add(task) {
+    async add<T>(task: () => Promise<T>): Promise<T> {
       pending++;
 
       return limiter(task).finally(() => {
@@ -26,7 +24,7 @@ export const createQueue = ({
         });
 
         idleResolvers = [];
-      });
+      }) as Promise<T>;
     },
     onIdle() {
       if (pending === 0) {
@@ -36,4 +34,4 @@ export const createQueue = ({
       return new Promise((resolve) => idleResolvers.push(resolve));
     },
   };
-};
+}

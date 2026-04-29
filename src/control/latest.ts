@@ -1,6 +1,6 @@
 export function latest<T, R>(
   callback: (value: T, signal: AbortSignal) => Promise<R>,
-) {
+): (value: T) => Promise<R> {
   let controller: AbortController | null = null;
 
   return (value: T) => {

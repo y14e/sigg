@@ -7,7 +7,7 @@ export function throttle<T, R>(
   delay: number,
   callback: (value: T, signal: AbortSignal) => Promise<R>,
   options: ThrottleOptions = {},
-) {
+): (value: T) => Promise<R | undefined> {
   let controller: AbortController | null = null;
   let lastTime = 0;
   let lastArgs: T | null = null;

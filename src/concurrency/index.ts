@@ -1,6 +1,6 @@
-export * from './all';
-export * from './any';
-export * from './map';
-export * from './parallel';
-export * from './race';
-export * from './settled';
+export { all } from './all';
+export { any } from './any';
+export { map } from './map';
+export { parallel } from './parallel';
+export { race } from './race';
+export { settled } from './settled';

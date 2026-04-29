@@ -1,3 +1,3 @@
-export * from './deferred';
-export * from './memo';
-export * from './once';
+export { deferred } from './deferred';
+export { memo } from './memo';
+export { once } from './once';

@@ -1,2 +1,2 @@
-export * from './sleep';
-export * from './timeout';
+export { sleep } from './sleep';
+export { timeout } from './timeout';

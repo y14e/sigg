@@ -2,11 +2,11 @@ import { anySignal } from '@/signal/any-signal';
 import { sleep } from '@/time/sleep';
 import type { RetryContext, RetryOptions, Task } from '@/types';
 
-export const retry = async <T>(
+export async function retry<T>(
   callback: Task<T>,
   optionsOrSignal?: RetryOptions<T> | AbortSignal,
   maybeSignal?: AbortSignal,
-): Promise<T> => {
+): Promise<T> {
   let options: RetryOptions<T>;
   let signal: AbortSignal | undefined;
 
@@ -83,4 +83,4 @@ export const retry = async <T>(
   }
 
   throw lastError ?? new Error('Retry failed');
-};
+}

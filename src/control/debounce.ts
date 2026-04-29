@@ -1,7 +1,7 @@
-export const debounce = <T, R>(
+export function debounce<T, R>(
   delay: number,
   callback: (value: T, signal: AbortSignal) => Promise<R>,
-) => {
+): (value: T) => Promise<R> {
   let controller: AbortController | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
 

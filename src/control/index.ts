@@ -1,3 +1,3 @@
-export * from './debounce';
-export * from './latest';
-export * from './throttle';
+export { debounce } from './debounce';
+export { latest } from './latest';
+export { throttle } from './throttle';

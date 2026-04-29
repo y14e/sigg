@@ -4,7 +4,7 @@ export function withSignal<T extends unknown[], R>(
   callback: (signal: AbortSignal, ...args: T) => Promise<R>,
 ) {
   return (...args: T) =>
-    (parent?: AbortSignal) =>
+    (signal?: AbortSignal) =>
     (own: AbortSignal) =>
-      callback(parent ? anySignal(parent, own) : own, ...args);
+      callback(signal ? anySignal(signal, own) : own, ...args);
 }

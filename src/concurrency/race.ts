@@ -2,10 +2,10 @@ import { abortReason } from '@/internal';
 import { anySignal } from '@/signal/any-signal';
 import type { Task } from '@/types';
 
-export const race = <T>(
+export function race<T>(
   tasks: readonly Task<T>[],
   signal?: AbortSignal,
-): Promise<T> => {
+): Promise<T> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
       return reject(abortReason(signal));
@@ -50,4 +50,4 @@ export const race = <T>(
         .catch((reason) => settle(() => reject(reason)));
     });
   });
-};
+}

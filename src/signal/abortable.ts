@@ -18,8 +18,8 @@ export function abortable<T>(
 
     signal.addEventListener('abort', onAbort, { once: true });
 
-    promise.then(resolve, reject).finally(() => {
-      signal.removeEventListener('abort', onAbort);
-    });
+    promise
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener('abort', onAbort));
   });
 }

@@ -2,10 +2,10 @@ import { abortReason } from '@/internal';
 import { anySignal } from '@/signal/any-signal';
 import type { Task } from '@/types';
 
-export const any = <T>(
+export function any<T>(
   tasks: readonly Task<T>[],
   signal?: AbortSignal,
-): Promise<T> => {
+): Promise<T> {
   return new Promise((resolve, reject) => {
     if (tasks.length === 0) {
       return reject(new AggregateError([], 'All promises were rejected'));
@@ -66,4 +66,4 @@ export const any = <T>(
         });
     });
   });
-};
+}
