@@ -1,64 +1,32 @@
-import { abortReason } from '@/internal';
-import { anySignal } from '@/signal/any-signal';
+import { _combineSignals, _createSettler } from '@/_internal';
 import type { Task } from '@/types';
 
-export function any<T>(
-  tasks: readonly Task<T>[],
-  signal?: AbortSignal,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
+export function any<T>(tasks: readonly Task<T>[], signal?: AbortSignal) {
+  return new Promise<T>((resolve, reject) => {
     if (tasks.length === 0) {
       return reject(new AggregateError([], 'All promises were rejected'));
     }
 
-    if (signal?.aborted) {
-      return reject(abortReason(signal));
+    const { controllers, settle, throwIfAborted } = _createSettler(
+      signal,
+      reject,
+    );
+    if (throwIfAborted()) {
+      return;
     }
 
-    const cleanup = () => {
-      signal?.removeEventListener('abort', onAbort);
-    };
-
-    let isSettled = false;
-    const controllers: AbortController[] = [];
-
-    const settle = (fn: () => void, reason?: unknown) => {
-      if (isSettled) {
-        return;
-      }
-
-      isSettled = true;
-      cleanup();
-
-      controllers.forEach((controller) => {
-        controller.abort(reason);
-      });
-
-      fn();
-    };
-
-    const onAbort = () => {
-      const reason = abortReason(signal);
-      settle(() => reject(reason), reason);
-    };
-
-    signal?.addEventListener('abort', onAbort, { once: true });
     const errors: unknown[] = [];
     let rejected = 0;
 
     tasks.forEach((task) => {
       const controller = new AbortController();
       controllers.push(controller);
-      const { signal: internal } = controller;
-      const combined = signal ? anySignal(signal, internal) : internal;
 
-      task(combined)
+      task(_combineSignals(signal, controller.signal) as AbortSignal)
         .then((value) => settle(() => resolve(value)))
         .catch((reason) => {
           errors.push(reason);
-          rejected++;
-
-          if (rejected === tasks.length) {
+          if (++rejected === tasks.length) {
             settle(() =>
               reject(new AggregateError(errors, 'All promises were rejected')),
             );

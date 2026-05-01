@@ -1,44 +1,34 @@
-import { abortReason } from '@/internal';
+import { _abortReason, _createTimeoutError } from '@/_internal';
 
-export function timeoutSignal(
-  timeout: number,
-  signal?: AbortSignal,
-): AbortSignal {
+export function timeoutSignal(timeout: number, signal?: AbortSignal) {
   const controller = new AbortController();
   const { signal: internal } = controller;
 
   if (signal?.aborted) {
-    controller.abort(abortReason(signal));
+    controller.abort(_abortReason(signal));
     return internal;
   }
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
-  const cleanup = () => {
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      timer = undefined;
-    }
-
-    signal?.removeEventListener('abort', onAbort);
-  };
+  const timer = setTimeout(
+    () => controller.abort(_createTimeoutError(timeout)),
+    timeout,
+  );
 
   const onAbort = () => {
-    cleanup();
-    controller.abort(abortReason(signal));
+    clearTimeout(timer);
+    controller.abort(_abortReason(signal));
   };
 
   signal?.addEventListener('abort', onAbort, { once: true });
-  internal.addEventListener('abort', cleanup, { once: true });
 
-  timer = setTimeout(() => {
-    controller.abort(
-      new DOMException(
-        `The operation timed out (${timeout}ms)`,
-        'TimeoutError',
-      ),
-    );
-  }, timeout);
+  internal.addEventListener(
+    'abort',
+    () => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+    },
+    { once: true },
+  );
 
   return internal;
 }

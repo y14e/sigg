@@ -1,4 +1,4 @@
-import { abortReason } from '@/internal';
+import { _abortReason } from '@/_internal';
 
 export function anySignal(
   ...signals: (AbortSignal | null | undefined)[]
@@ -9,10 +9,11 @@ export function anySignal(
   );
 
   const controller = new AbortController();
+  const { signal: internal } = controller;
 
   if (sources.length === 0) {
     controller.abort(new DOMException('Aborted', 'AbortError'));
-    return controller.signal;
+    return internal;
   }
 
   if (sources.length === 1) {
@@ -22,8 +23,6 @@ export function anySignal(
   if (typeof AbortSignal.any === 'function') {
     return AbortSignal.any(sources);
   }
-
-  const { signal: internal } = controller;
 
   const cleanup = () => {
     sources.forEach((source) => {
@@ -35,7 +34,7 @@ export function anySignal(
 
   const onAbort = (event: Event) => {
     cleanup();
-    controller.abort(abortReason(event.currentTarget as AbortSignal));
+    controller.abort(_abortReason(event.currentTarget as AbortSignal));
   };
 
   internal.addEventListener('abort', cleanup, { once: true });
@@ -43,7 +42,7 @@ export function anySignal(
   for (const source of sources) {
     if (source.aborted) {
       cleanup();
-      controller.abort(abortReason(source));
+      controller.abort(_abortReason(source));
       return internal;
     }
 

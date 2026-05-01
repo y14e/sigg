@@ -21,14 +21,15 @@ export function createLimiter<T>(
 
   return (fn) =>
     new Promise((resolve, reject) => {
-      queue[queue.length] = () =>
+      queue.push(() =>
         fn()
           .then(resolve)
           .catch(reject)
           .finally(() => {
             attempt--;
             next();
-          });
+          }),
+      );
       next();
     });
 }

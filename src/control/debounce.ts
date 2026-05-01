@@ -16,12 +16,11 @@ export function debounce<T, R>(
     controller = new AbortController();
 
     return new Promise<R>((resolve, reject) => {
-      timer = setTimeout(() => {
-        fn(value, controller?.signal as AbortSignal).then(
-          resolve,
-          reject,
-        );
-      }, delay);
+      timer = setTimeout(
+        () =>
+          fn(value, controller?.signal as AbortSignal).then(resolve, reject),
+        delay,
+      );
     });
   };
-};
+}

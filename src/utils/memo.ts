@@ -6,69 +6,63 @@ type MemoNode<T> = {
   expireAt?: number | undefined;
 };
 
-export function memo<T, A extends unknown[]>(
-  fn: (...args: A) => Promise<T>,
+export function memo<T extends unknown[], R>(
+  fn: (...args: T) => Promise<R>,
   options: { ttl?: number } = {},
 ) {
-  const { ttl } = options;
-  const root: MemoNode<T> = {};
+  const root: MemoNode<R> = {};
 
-  const getNode = (args: A): MemoNode<T> => {
+  const getNode = (args: T): MemoNode<R> => {
     let node = root;
 
     for (const arg of args) {
-      const isObject =
-        arg !== null && (typeof arg === 'object' || typeof arg === 'function');
+      let map: WeakMap<object, MemoNode<R>> | Map<unknown, MemoNode<R>>;
 
-      if (isObject) {
-        node.objectBranch ??= new WeakMap();
-        const map = node.objectBranch;
-        let next = map.get(arg as object);
-        if (!next) {
-          next = {};
-          map.set(arg as object, next);
-        }
-        node = next;
+      if (
+        arg !== null &&
+        (typeof arg === 'object' || typeof arg === 'function')
+      ) {
+        map = node.objectBranch ??= new WeakMap();
       } else {
-        node.primitiveBranch ??= new Map();
-        const map = node.primitiveBranch;
-        let next = map.get(arg);
-        if (!next) {
-          next = {};
-          map.set(arg, next);
-        }
-        node = next;
+        map = node.primitiveBranch ??= new Map();
       }
+
+      let next = map.get(arg as object);
+
+      if (!next) {
+        next = {};
+        map.set(arg as object, next);
+      }
+
+      node = next;
     }
 
     return node;
   };
 
-  const memoized = (...args: A): Promise<T> => {
-    const now = Date.now();
+  const { ttl } = options;
+
+  const memoized = (...args: T): Promise<R> => {
     const node = getNode(args);
+    const now = Date.now();
 
-    // --- valueキャッシュ ---
     if (node.value !== undefined) {
-      if (ttl === undefined || node.expireAt === undefined) {
+      if (
+        ttl === undefined ||
+        node.expireAt === undefined ||
+        now < node.expireAt
+      ) {
         return Promise.resolve(node.value);
       }
 
-      if (now < node.expireAt) {
-        return Promise.resolve(node.value);
-      }
-
-      // 期限切れ
       node.value = undefined;
       node.expireAt = undefined;
     }
 
-    // --- in-flight共有 ---
     if (node.promise) {
       return node.promise;
     }
 
-    // --- 実行 ---
     const p = Promise.resolve().then(() => fn(...args));
     node.promise = p;
 
@@ -78,15 +72,11 @@ export function memo<T, A extends unknown[]>(
       if (ttl !== undefined) {
         node.expireAt = Date.now() + ttl;
       }
-    })
-      .catch(() => {
-        // エラーはキャッシュしない
-      })
-      .finally(() => {
-        if (node.promise === p) {
-          delete node.promise;
-        }
-      });
+    }).finally(() => {
+      if (node.promise === p) {
+        delete node.promise;
+      }
+    });
 
     return p;
   };
@@ -99,19 +89,19 @@ export function memo<T, A extends unknown[]>(
     root.expireAt = undefined;
   };
 
-  memoized.delete = (...args: A) => {
+  memoized.delete = (...args: T) => {
     const node = getNode(args);
     node.promise = undefined;
     node.value = undefined;
     node.expireAt = undefined;
   };
 
-  memoized.invalidate = (predicate: (args: A) => boolean) => {
-    const walk = (node: MemoNode<T>, path: unknown[]) => {
-      if (node.value !== undefined || node.promise !== undefined) {
-        if (predicate(path as A)) {
-          node.value = undefined;
+  memoized.invalidate = (predicate: (args: T) => boolean) => {
+    const walk = (node: MemoNode<R>, path: unknown[]) => {
+      if (node.promise !== undefined || node.value !== undefined) {
+        if (predicate(path as T)) {
           node.promise = undefined;
+          node.value = undefined;
           node.expireAt = undefined;
         }
       }
@@ -126,7 +116,7 @@ export function memo<T, A extends unknown[]>(
 
   return memoized as typeof memoized & {
     clear: () => void;
-    delete: (...args: A) => void;
-    invalidate: (predicate: (args: A) => boolean) => void;
+    delete: (...args: T) => void;
+    invalidate: (predicate: (args: T) => boolean) => void;
   };
 }

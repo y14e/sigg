@@ -6,7 +6,7 @@ export function createQueue({ concurrency = 1 } = {}): {
 } {
   let pending = 0;
   const limiter = createLimiter(concurrency);
-  let idleResolvers: (() => void)[] = [];
+  let resolvers: (() => void)[] = [];
 
   return {
     async add<T>(task: () => Promise<T>): Promise<T> {
@@ -15,15 +15,15 @@ export function createQueue({ concurrency = 1 } = {}): {
       return limiter(task).finally(() => {
         pending--;
 
-        if (pending > 0 || idleResolvers.length === 0) {
+        if (pending > 0 || resolvers.length === 0) {
           return;
         }
 
-        idleResolvers.forEach((resolver) => {
+        resolvers.forEach((resolver) => {
           resolver();
         });
 
-        idleResolvers = [];
+        resolvers = [];
       }) as Promise<T>;
     },
     onIdle() {
@@ -31,7 +31,7 @@ export function createQueue({ concurrency = 1 } = {}): {
         return Promise.resolve();
       }
 
-      return new Promise((resolve) => idleResolvers.push(resolve));
+      return new Promise((resolve) => resolvers.push(resolve));
     },
   };
 }

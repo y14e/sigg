@@ -1,11 +1,10 @@
-export function latest<T, R>(
-  fn: (value: T, signal: AbortSignal) => Promise<R>,
-): (value: T) => Promise<R> {
+export function latest<T extends unknown[], R>(
+  fn: (signal: AbortSignal, ...args: T) => Promise<R>,
+) {
   let controller: AbortController | null = null;
-
-  return (value: T) => {
-    controller?.abort();
+  return (...args: T): Promise<R> => {
+    controller?.abort(new DOMException('Aborted', 'AbortError'));
     controller = new AbortController();
-    return fn(value, controller.signal);
+    return fn(controller.signal, ...args);
   };
 }

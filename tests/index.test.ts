@@ -188,8 +188,8 @@ describe('sigggnal', () => {
   });
 
   test('latest: cancels previous', async () => {
-    const fn = latest(async (_: number, signal) => {
-      await sleep(20, signal);
+    const fn = latest(async (signal: AbortSignal, _: number) => {
+      await sleep(20, signal); // ← signalを渡す
       return 1;
     });
 

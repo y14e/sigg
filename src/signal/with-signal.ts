@@ -1,10 +1,10 @@
-import { anySignal } from './any-signal';
+import { _combineSignals } from '@/_internal';
 
 export function withSignal<T extends unknown[], R>(
   fn: (signal: AbortSignal, ...args: T) => Promise<R>,
 ) {
   return (...args: T) =>
     (parent?: AbortSignal) =>
-    (internal: AbortSignal) =>
-      fn(parent ? anySignal(parent, internal) : internal, ...args);
+    (child: AbortSignal) =>
+      fn(_combineSignals(parent, child) as AbortSignal, ...args);
 }

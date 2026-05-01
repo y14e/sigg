@@ -1,46 +1,30 @@
-import { abortReason } from '@/internal';
-import { anySignal } from '@/signal/any-signal';
+import {
+  _combineSignals,
+  _createCleanup,
+  _createTimeoutError,
+  _withAbort,
+} from '@/_internal';
 
 export async function timeout<T>(
   timeout: number,
   fn: (signal: AbortSignal) => Promise<T>,
   signal?: AbortSignal,
 ): Promise<T> {
-  if (signal?.aborted) {
-    return Promise.reject(abortReason(signal));
-  }
+  return _withAbort(signal, (controller) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
+    const cleanup = _createCleanup(timer);
 
-  const cleanup = () => {
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      timer = undefined;
-    }
-
-    signal?.removeEventListener('abort', onAbort);
-  };
-
-  const controller = new AbortController();
-
-  const onAbort = () => {
-    cleanup();
-    controller.abort(abortReason(signal));
-  };
-
-  signal?.addEventListener('abort', onAbort, { once: true });
-
-  timer = setTimeout(() => {
-    controller.abort(
-      new DOMException(
-        `The operation timed out (${timeout}ms)`,
-        'TimeoutError',
-      ),
+    timer = setTimeout(
+      () => controller.abort(_createTimeoutError(timeout)),
+      timeout,
     );
-  }, timeout);
 
-  const { signal: internalSignal } = controller;
-  return fn(
-    signal ? anySignal(signal, internalSignal) : internalSignal,
-  ).finally(cleanup);
+    return {
+      promise: fn(
+        _combineSignals(signal, controller.signal) as AbortSignal,
+      ).finally(() => cleanup()),
+      cleanup,
+    };
+  });
 }

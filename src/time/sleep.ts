@@ -1,35 +1,14 @@
-import { abortReason } from '@/internal';
+import { _createCleanup, _withAbort } from '@/_internal';
 
-export function sleep(timeout: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(abortReason(signal));
-      return;
-    }
-
+export function sleep(timeout: number, signal?: AbortSignal) {
+  return _withAbort(signal, () => {
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const cleanup = () => {
-      if (timer !== undefined) {
-        clearTimeout(timer);
-        timer = undefined;
-      }
-
-      signal?.removeEventListener('abort', onAbort);
+    return {
+      promise: new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, timeout);
+      }),
+      cleanup: _createCleanup(timer),
     };
-
-    const onAbort = () => {
-      cleanup();
-      reject(abortReason(signal));
-    };
-
-    signal?.addEventListener('abort', onAbort, { once: true });
-
-    timer = setTimeout(() => {
-      cleanup();
-      resolve();
-    }, timeout);
   });
 }
-
-export const wait = sleep;

@@ -1,7 +1,7 @@
-type ThrottleOptions = {
-  leading?: boolean;
-  trailing?: boolean;
-};
+export interface ThrottleOptions {
+  readonly leading?: boolean;
+  readonly trailing?: boolean;
+}
 
 export function throttle<T, R>(
   delay: number,
@@ -22,9 +22,7 @@ export function throttle<T, R>(
   };
 
   return (value: T): Promise<R | undefined> => {
-    const now = Date.now();
-    const remaining = delay - (now - lastTime);
-    lastArgs = value;
+    const remaining = delay - (Date.now() - lastTime);
 
     if (remaining <= 0) {
       if (timer !== undefined) {
@@ -38,6 +36,7 @@ export function throttle<T, R>(
     }
 
     if (trailing && timer === undefined) {
+      lastArgs = value;
       return new Promise<R | undefined>((resolve, reject) => {
         timer = setTimeout(() => {
           timer = undefined;

@@ -1,4 +1,4 @@
-import { runWithConcurrency } from '@/internal';
+import { _runWithConcurrency } from '@/_internal';
 import type { Task } from '@/types';
 
 export async function all<T>(
@@ -9,7 +9,7 @@ export async function all<T>(
   const results: T[] = new Array(tasks.length);
   let firstError: unknown | undefined;
 
-  await runWithConcurrency(
+  await _runWithConcurrency(
     tasks,
     concurrency,
     (result, index) => {

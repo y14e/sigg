@@ -1,4 +1,4 @@
-import { runWithConcurrency } from '@/internal';
+import { _runWithConcurrency } from '@/_internal';
 
 export async function settled<T>(
   tasks: ((signal: AbortSignal) => Promise<T>)[],
@@ -7,7 +7,7 @@ export async function settled<T>(
 ): Promise<PromiseSettledResult<T>[]> {
   const results: PromiseSettledResult<T>[] = new Array(tasks.length);
 
-  await runWithConcurrency(
+  await _runWithConcurrency(
     tasks,
     concurrency,
     (result, index) => {
